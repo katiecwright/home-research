@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Price Diffs — Listed vs. Sold</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="controls">
+    <h1>Price Diffs</h1>
+    <p class="subtitle">Listed vs. sold by zip code</p>
+
+    <label for="metro-select">Metro</label>
+    <select id="metro-select">
+      <option value="">Loading…</option>
+    </select>
+
+    <label>View</label>
+    <div class="button-group" id="metric-toggle">
+      <button class="active" data-metric="price_delta">$ Delta</button>
+      <button data-metric="sale_vs_list">% vs. List</button>
+      <button data-metric="median_sale_price">Price</button>
+      <button data-metric="median_dom">Days on Mkt</button>
+    </div>
+
+    <div class="button-group" id="viz-toggle">
+      <button class="active" data-viz="markers">Bubbles</button>
+      <button data-viz="heatmap">Heatmap</button>
+    </div>
+
+    <div id="legend" class="legend"></div>
+
+    <div id="stats" class="stats-panel hidden">
+      <div class="stat-row">
+        <span class="stat-label">Zip code</span>
+        <span class="stat-value" id="stat-zip">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Sale vs. list ($)</span>
+        <span class="stat-value" id="stat-delta">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Sale vs. list (%)</span>
+        <span class="stat-value" id="stat-stl">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Sold above asking</span>
+        <span class="stat-value" id="stat-above">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Median sale price</span>
+        <span class="stat-value" id="stat-price">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Median days on mkt</span>
+        <span class="stat-value" id="stat-dom">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Homes sold</span>
+        <span class="stat-value" id="stat-sold">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Period</span>
+        <span class="stat-value" id="stat-period">—</span>
+      </div>
+    </div>
+
+    <div id="data-date"></div>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

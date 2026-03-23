@@ -1,0 +1,48 @@
+name: Weekly Data Refresh
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"  # Mondays at 2 PM UTC = 6 AM or 7 AM Pacific (depending on DST)
+  workflow_dispatch:        # allow manual trigger from the GitHub Actions UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # needed to commit data files back to the repo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Cache the Redfin S3 file (1.5 GB) for 7 days.
+      # On a cache hit the scraper reads from disk (seconds).
+      # On a cache miss it downloads from S3 (2-3 min) then caches it.
+      - name: Cache Redfin market data
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/price_diffs
+          key: redfin-zip-market-${{ env.CACHE_WEEK }}
+          restore-keys: redfin-zip-market-
+        env:
+          CACHE_WEEK: ${{ github.run_id }}  # refreshes weekly via the age check in redfin.py
+
+      - name: Run scraper
+        timeout-minutes: 10
+        run: python -m scraper.run
+
+      - name: Commit and push updated data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add web/data/
+          git diff --staged --quiet || git commit -m "chore: weekly data refresh $(date -u +%Y-%m-%d)"
+          git push
