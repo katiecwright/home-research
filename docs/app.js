@@ -2,17 +2,15 @@
  * Price Diffs — frontend app
  *
  * Data flow:
- *   docs/data/metros.json      → populate metro dropdown
+ *   docs/data/metros.json      → list of metros; used to fetch all metro files
  *   docs/data/{metro_id}.json  → one entry per zip code with aggregate market stats
+ *
+ * All metros are loaded on startup and rendered simultaneously.
+ * The "Zoom to" dropdown navigates the map but never filters data.
  *
  * Each zip code is rendered as a single bubble on the map.
  * Bubble size  = homes sold (transaction volume)
  * Bubble color = selected metric (sale vs. list, price, or days on market)
- *
- * Three view modes:
- *   Sale vs. List  — how far above/below asking homes sell on average
- *   Price          — median sale price
- *   Days on Market — median days on market
  */
 
 const DATA_DIR = "data/";
@@ -129,14 +127,14 @@ let map;
 let currentLayers = [];
 let currentMetric = "price_delta";
 let currentViz    = "markers";
-let currentZips   = [];
+let allZips       = [];
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", async () => {
   initMap();
   bindControls();
-  await loadMetros();
+  await loadAllData();
 });
 
 function initMap() {
@@ -148,14 +146,14 @@ function initMap() {
 }
 
 function bindControls() {
-  document.getElementById("metro-select").addEventListener("change", onMetroChange);
+  document.getElementById("zoom-select").addEventListener("change", onZoomChange);
 
   document.getElementById("metric-toggle").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-metric]");
     if (!btn) return;
     setActiveButton("metric-toggle", btn);
     currentMetric = btn.dataset.metric;
-    if (currentZips.length) render(currentZips);
+    if (allZips.length) render(allZips);
     updateLegend();
   });
 
@@ -164,52 +162,105 @@ function bindControls() {
     if (!btn) return;
     setActiveButton("viz-toggle", btn);
     currentViz = btn.dataset.viz;
-    if (currentZips.length) render(currentZips);
+    if (allZips.length) render(allZips);
   });
 }
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
-async function loadMetros() {
-  const data = await fetchJSON(DATA_DIR + "metros.json");
-  if (!data || !data.metros || !data.metros.length) {
-    document.getElementById("metro-select").innerHTML =
+const STATE_NAMES = { CA: "California", OR: "Oregon", WA: "Washington", NY: "New York" };
+
+async function loadAllData() {
+  const metrosData = await fetchJSON(DATA_DIR + "metros.json");
+  if (!metrosData || !metrosData.metros || !metrosData.metros.length) {
+    document.getElementById("zoom-select").innerHTML =
       "<option>No data yet — run the scraper first</option>";
     return;
   }
 
-  const select = document.getElementById("metro-select");
-  select.innerHTML = "";
-  for (const m of data.metros) {
-    const opt = document.createElement("option");
-    opt.value = m.id;
-    opt.textContent = `${m.name} (${m.zip_count} zip${m.zip_count !== 1 ? "s" : ""})`;
-    opt.dataset.center = JSON.stringify(m.center);
-    opt.dataset.zoom   = m.zoom;
-    select.appendChild(opt);
+  // Fetch all metro files in parallel
+  const results = await Promise.all(
+    metrosData.metros.map(async (m) => {
+      const data = await fetchJSON(DATA_DIR + m.id + ".json");
+      return { meta: m, data };
+    })
+  );
+
+  // Flatten all zips
+  allZips = results.flatMap((r) => r.data?.zips ?? []);
+
+  // Group metros by state (derived from the zip data itself)
+  const metrosByState = {};
+  for (const { meta, data } of results) {
+    if (!data?.zips?.length) continue;
+    const state = data.zips[0].state;
+    if (!metrosByState[state]) metrosByState[state] = [];
+    metrosByState[state].push({ meta, zips: data.zips });
   }
-  select.selectedIndex = 0;
-  onMetroChange();
+
+  buildZoomDropdown(metrosByState);
+
+  // Fit initial map view to all loaded data
+  const mappable = allZips.filter((z) => z.lat && z.lon);
+  if (mappable.length) {
+    map.fitBounds(L.latLngBounds(mappable.map((z) => [z.lat, z.lon])), { padding: [40, 40] });
+  }
+
+  // Use the most recent fetched_at across all metros
+  const fetchedAt = results
+    .map((r) => r.data?.fetched_at)
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+
+  setDataDate(fetchedAt, allZips[0]);
+  render(allZips);
+  updateLegend();
 }
 
-async function onMetroChange() {
-  const select = document.getElementById("metro-select");
-  const opt    = select.options[select.selectedIndex];
-  if (!opt || !opt.dataset.center) return;
+function buildZoomDropdown(metrosByState) {
+  const select = document.getElementById("zoom-select");
+  select.innerHTML = "";
 
-  map.setView(JSON.parse(opt.dataset.center), parseInt(opt.dataset.zoom, 10));
+  for (const [state, metros] of Object.entries(metrosByState)) {
+    const stateName = STATE_NAMES[state] || state;
+    const group = document.createElement("optgroup");
+    group.label = stateName;
 
-  const data = await fetchJSON(DATA_DIR + opt.value + ".json");
-  if (!data || !data.zips || !data.zips.length) {
-    clearLayers();
-    document.getElementById("stats").classList.add("hidden");
-    return;
+    // State-level zoom option
+    const stateOpt = document.createElement("option");
+    stateOpt.value = `state:${state}`;
+    stateOpt.textContent = `${stateName} (all)`;
+    group.appendChild(stateOpt);
+
+    // Individual metro options
+    for (const { meta } of metros) {
+      const opt = document.createElement("option");
+      opt.value = `metro:${meta.id}`;
+      opt.textContent = meta.name;
+      opt.dataset.center = JSON.stringify(meta.center);
+      opt.dataset.zoom   = meta.zoom;
+      group.appendChild(opt);
+    }
+
+    select.appendChild(group);
   }
+}
 
-  currentZips = data.zips;
-  setDataDate(data.fetched_at, currentZips[0]);
-  render(currentZips);
-  updateLegend();
+function onZoomChange() {
+  const select = document.getElementById("zoom-select");
+  const val    = select.value;
+
+  if (val.startsWith("state:")) {
+    const state     = val.slice(6);
+    const stateZips = allZips.filter((z) => z.state === state && z.lat && z.lon);
+    if (stateZips.length) {
+      map.fitBounds(L.latLngBounds(stateZips.map((z) => [z.lat, z.lon])), { padding: [40, 40] });
+    }
+  } else if (val.startsWith("metro:")) {
+    const opt = select.options[select.selectedIndex];
+    map.setView(JSON.parse(opt.dataset.center), parseInt(opt.dataset.zoom, 10));
+  }
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
