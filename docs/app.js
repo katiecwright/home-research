@@ -125,9 +125,10 @@ const METRIC_CONFIG = {
 
 let map;
 let currentLayers = [];
-let currentMetric = "price_delta";
-let currentViz    = "markers";
-let allZips       = [];
+let currentMetric  = "price_delta";
+let currentViz     = "markers";
+let allZips        = [];
+let zipsByPeriod   = {};  // period_begin → flat zips array
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -147,6 +148,7 @@ function initMap() {
 
 function bindControls() {
   document.getElementById("zoom-select").addEventListener("change", onZoomChange);
+  document.getElementById("period-select").addEventListener("change", onPeriodChange);
 
   document.getElementById("metric-toggle").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-metric]");
@@ -186,16 +188,38 @@ async function loadAllData() {
     })
   );
 
-  // Flatten all zips
-  allZips = results.flatMap((r) => r.data?.zips ?? []);
+  // Build zipsByPeriod: period_begin → flat array of zips across all metros
+  // Handles both new multi-period format and old flat format
+  zipsByPeriod = {};
+  for (const { data } of results) {
+    if (!data) continue;
+    const periods = data.periods ?? (data.zips?.length ? [{ period_begin: data.zips[0]?.period_begin, period_end: data.zips[0]?.period_end, zips: data.zips }] : []);
+    for (const p of periods) {
+      const key = p.period_begin;
+      if (!key) continue;
+      if (!zipsByPeriod[key]) zipsByPeriod[key] = { period_begin: key, period_end: p.period_end, zips: [] };
+      zipsByPeriod[key].zips.push(...(p.zips ?? []));
+    }
+  }
 
-  // Group metros by state (derived from the zip data itself)
+  // Sort periods descending (most recent first)
+  const sortedPeriods = Object.values(zipsByPeriod).sort((a, b) => b.period_begin.localeCompare(a.period_begin));
+
+  buildPeriodSelector(sortedPeriods);
+
+  // Default to most recent period
+  allZips = sortedPeriods.length ? sortedPeriods[0].zips : [];
+
+  // Group metros by state for zoom dropdown (use most recent period's zips)
   const metrosByState = {};
   for (const { meta, data } of results) {
-    if (!data?.zips?.length) continue;
-    const state = data.zips[0].state;
+    if (!data) continue;
+    const periods = data.periods ?? (data.zips?.length ? [{ zips: data.zips }] : []);
+    const zips = periods[0]?.zips ?? [];
+    if (!zips.length) continue;
+    const state = zips[0].state;
     if (!metrosByState[state]) metrosByState[state] = [];
-    metrosByState[state].push({ meta, zips: data.zips });
+    metrosByState[state].push({ meta, zips });
   }
 
   buildZoomDropdown(metrosByState);
@@ -206,13 +230,7 @@ async function loadAllData() {
     map.fitBounds(L.latLngBounds(mappable.map((z) => [z.lat, z.lon])), { padding: [40, 40] });
   }
 
-  // Use the most recent fetched_at across all metros
-  const fetchedAt = results
-    .map((r) => r.data?.fetched_at)
-    .filter(Boolean)
-    .sort()
-    .at(-1);
-
+  const fetchedAt = results.map((r) => r.data?.fetched_at).filter(Boolean).sort().at(-1);
   setDataDate(fetchedAt, allZips[0]);
   render(allZips);
   updateLegend();
@@ -245,6 +263,37 @@ function buildZoomDropdown(metrosByState) {
 
     select.appendChild(group);
   }
+}
+
+function buildPeriodSelector(sortedPeriods) {
+  const select = document.getElementById("period-select");
+  select.innerHTML = "";
+  if (!sortedPeriods.length) {
+    select.innerHTML = "<option>No data</option>";
+    return;
+  }
+  for (const p of sortedPeriods) {
+    const opt = document.createElement("option");
+    opt.value = p.period_begin;
+    opt.textContent = formatPeriod(p.period_begin, p.period_end);
+    select.appendChild(opt);
+  }
+  select.selectedIndex = 0;
+}
+
+function formatPeriod(period_begin, period_end) {
+  if (!period_begin) return "Unknown";
+  const month = parseInt(period_begin.slice(5, 7), 10);
+  const year  = period_begin.slice(0, 4);
+  return `Q${Math.ceil(month / 3)} ${year}`;
+}
+
+function onPeriodChange() {
+  const key = document.getElementById("period-select").value;
+  if (!key || !zipsByPeriod[key]) return;
+  allZips = zipsByPeriod[key].zips;
+  setDataDate(null, allZips[0]);
+  render(allZips);
 }
 
 function onZoomChange() {
