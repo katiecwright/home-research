@@ -168,7 +168,7 @@ function bindControls() {
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
-const STATE_NAMES = { CA: "California", OR: "Oregon", WA: "Washington", NY: "New York" };
+const STATE_NAMES = { CA: "California", OR: "Oregon", WA: "Washington", NY: "New York", PA: "Pennsylvania" };
 
 async function loadAllData() {
   const metrosData = await fetchJSON(DATA_DIR + "metros.json");
