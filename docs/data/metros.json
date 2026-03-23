@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-03-23T22:18:02.607368+00:00",
+  "fetched_at": "2026-03-23T23:04:57.994969+00:00",
   "metros": [
     {
       "id": "berkeley",
@@ -32,6 +32,16 @@
       "zip_count": 8
     },
     {
+      "id": "north_marin",
+      "name": "North Marin County, CA",
+      "center": [
+        38.05,
+        -122.62
+      ],
+      "zoom": 11,
+      "zip_count": 9
+    },
+    {
       "id": "san_francisco",
       "name": "San Francisco, CA",
       "center": [
@@ -52,6 +62,36 @@
       "zip_count": 15
     },
     {
+      "id": "sonoma",
+      "name": "Sonoma County, CA",
+      "center": [
+        38.44,
+        -122.72
+      ],
+      "zoom": 10,
+      "zip_count": 15
+    },
+    {
+      "id": "napa",
+      "name": "Napa County, CA",
+      "center": [
+        38.38,
+        -122.35
+      ],
+      "zoom": 11,
+      "zip_count": 8
+    },
+    {
+      "id": "mendocino",
+      "name": "Mendocino County, CA",
+      "center": [
+        39.3,
+        -123.4
+      ],
+      "zoom": 10,
+      "zip_count": 7
+    },
+    {
       "id": "portland",
       "name": "Portland, OR",
       "center": [
@@ -60,6 +100,136 @@
       ],
       "zoom": 11,
       "zip_count": 30
+    },
+    {
+      "id": "salem",
+      "name": "Salem / Keizer, OR",
+      "center": [
+        44.943,
+        -123.035
+      ],
+      "zoom": 12,
+      "zip_count": 7
+    },
+    {
+      "id": "eugene",
+      "name": "Eugene / Springfield, OR",
+      "center": [
+        44.048,
+        -123.09
+      ],
+      "zoom": 12,
+      "zip_count": 8
+    },
+    {
+      "id": "bend",
+      "name": "Bend / Redmond, OR",
+      "center": [
+        44.058,
+        -121.31
+      ],
+      "zoom": 11,
+      "zip_count": 5
+    },
+    {
+      "id": "seattle",
+      "name": "Seattle Metro, WA",
+      "center": [
+        47.615,
+        -122.29
+      ],
+      "zoom": 11,
+      "zip_count": 35
+    },
+    {
+      "id": "tacoma",
+      "name": "Tacoma Metro, WA",
+      "center": [
+        47.24,
+        -122.45
+      ],
+      "zoom": 11,
+      "zip_count": 24
+    },
+    {
+      "id": "olympia",
+      "name": "Olympia / Lacey / Tumwater, WA",
+      "center": [
+        47.037,
+        -122.87
+      ],
+      "zoom": 12,
+      "zip_count": 7
+    },
+    {
+      "id": "sw_washington",
+      "name": "SW Washington / I-5 Corridor, WA",
+      "center": [
+        45.8,
+        -122.7
+      ],
+      "zoom": 10,
+      "zip_count": 15
+    },
+    {
+      "id": "nyc_manhattan",
+      "name": "NYC Manhattan, NY",
+      "center": [
+        40.7831,
+        -73.9712
+      ],
+      "zoom": 13,
+      "zip_count": 32
+    },
+    {
+      "id": "nyc_brooklyn",
+      "name": "NYC Brooklyn, NY",
+      "center": [
+        40.6501,
+        -73.9496
+      ],
+      "zoom": 12,
+      "zip_count": 36
+    },
+    {
+      "id": "nyc_queens",
+      "name": "NYC Queens, NY",
+      "center": [
+        40.7282,
+        -73.8695
+      ],
+      "zoom": 12,
+      "zip_count": 32
+    },
+    {
+      "id": "nyc_bronx_si",
+      "name": "NYC Bronx & Staten Island, NY",
+      "center": [
+        40.74,
+        -73.96
+      ],
+      "zoom": 11,
+      "zip_count": 33
+    },
+    {
+      "id": "upstate_ny",
+      "name": "Upstate New York",
+      "center": [
+        43.01,
+        -76.15
+      ],
+      "zoom": 7,
+      "zip_count": 71
+    },
+    {
+      "id": "philadelphia",
+      "name": "Philadelphia Metro, PA",
+      "center": [
+        40.0,
+        -75.2
+      ],
+      "zoom": 11,
+      "zip_count": 66
     }
   ]
 }
