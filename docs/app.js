@@ -2,8 +2,8 @@
  * Price Diffs — frontend app
  *
  * Data flow:
- *   web/data/metros.json      → populate metro dropdown
- *   web/data/{metro_id}.json  → one entry per zip code with aggregate market stats
+ *   docs/data/metros.json      → populate metro dropdown
+ *   docs/data/{metro_id}.json  → one entry per zip code with aggregate market stats
  *
  * Each zip code is rendered as a single bubble on the map.
  * Bubble size  = homes sold (transaction volume)

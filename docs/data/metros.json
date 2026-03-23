@@ -1,0 +1,65 @@
+{
+  "fetched_at": "2026-03-23T21:24:31.064637+00:00",
+  "metros": [
+    {
+      "id": "berkeley",
+      "name": "Berkeley / El Cerrito, CA",
+      "center": [
+        37.89,
+        -122.285
+      ],
+      "zoom": 12,
+      "zip_count": 10
+    },
+    {
+      "id": "lamorinda",
+      "name": "Lamorinda (Walnut Creek / Orinda), CA",
+      "center": [
+        37.898,
+        -122.07
+      ],
+      "zoom": 12,
+      "zip_count": 5
+    },
+    {
+      "id": "south_marin",
+      "name": "South Marin County, CA",
+      "center": [
+        37.92,
+        -122.53
+      ],
+      "zoom": 12,
+      "zip_count": 8
+    },
+    {
+      "id": "san_francisco",
+      "name": "San Francisco, CA",
+      "center": [
+        37.7749,
+        -122.4194
+      ],
+      "zoom": 12,
+      "zip_count": 24
+    },
+    {
+      "id": "oakland",
+      "name": "Oakland, CA",
+      "center": [
+        37.8044,
+        -122.2712
+      ],
+      "zoom": 12,
+      "zip_count": 15
+    },
+    {
+      "id": "portland",
+      "name": "Portland, OR",
+      "center": [
+        45.5051,
+        -122.675
+      ],
+      "zoom": 11,
+      "zip_count": 30
+    }
+  ]
+}

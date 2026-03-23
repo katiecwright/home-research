@@ -2,7 +2,7 @@
 Main entry point for the scraper.
 
 Fetches zip-level market stats from Redfin's public S3 dataset and writes
-JSON files to web/data/ for the frontend to consume.
+JSON files to docs/data/ for the frontend to consume.
 
 Usage:
     python -m scraper.run
@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-OUT_DIR = Path(__file__).parent.parent / "web" / "data"
+OUT_DIR = Path(__file__).parent.parent / "docs" / "data"
 
 
 def run():
